@@ -1,5 +1,6 @@
 
 from utils import *
+import itertools
 
 
 row_units = [cross(r, cols) for r in rows]
@@ -7,8 +8,9 @@ column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
 unitlist = row_units + column_units + square_units
 
-# TODO: Update the unit list to add the new diagonal units
-unitlist = unitlist
+# Update the unit list to add the new diagonal units
+diagonal_units = [boxes[::10], boxes[8:73:8]]
+unitlist = unitlist + diagonal_units
 
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
@@ -41,8 +43,34 @@ def naked_twins(values):
     and because it is simpler (since the reduce_puzzle function already calls this
     strategy repeatedly).
     """
-    # TODO: Implement this function!
-    raise NotImplementedError
+    # Find all boxes with 2 possible values
+
+    display(values)
+
+    doubles = [box for box in values.keys() if len(values[box]) == 2]
+
+    # For each box in 'doubles', find a peer with the same possible values (a 'twin')
+    # Store each unique pair of twins in a list
+    twins = set()
+    for box in doubles:
+        for twin in peers[box]:
+            if values[box] == values[twin]:
+                twins.add(frozenset((box, twin)))
+    twins = [tuple(pair) for pair in list(twins)]
+
+    # Iterate through list of units for each twin to see whether they share a unit
+    # If common unit exists, eliminate the two values from each box in the unit
+    # apart from the twins.
+    for twin1, twin2 in twins:
+        for unit1 in units[twin1]:
+            for unit2 in units[twin2]:
+                if unit1 == unit2:
+                    for box in unit1:
+                        if box == twin1 or box == twin2:
+                            continue
+                        values[box] = values[box].replace(values[twin1][0],'')
+                        values[box] = values[box].replace(values[twin1][1],'')
+    return values
 
 
 def eliminate(values):
@@ -61,8 +89,16 @@ def eliminate(values):
     dict
         The values dictionary with the assigned values eliminated from peers
     """
-    # TODO: Copy your code from the classroom to complete this function
-    raise NotImplementedError
+
+    for box in values:
+        if len(values[box]) == 1:
+            box_peers = peers[box]
+            box_value = values[box]
+            for peer in box_peers:
+                values[peer] = values[peer].replace(box_value, "")
+        else:
+            continue
+    return values
 
 
 def only_choice(values):
@@ -101,7 +137,7 @@ def reduce_puzzle(values):
     -------
     dict or False
         The values dictionary after continued application of the constraint strategies
-        no longer produces any changes, or False if the puzzle is unsolvable 
+        no longer produces any changes, or False if the puzzle is unsolvable
     """
     # TODO: Copy your code from the classroom and modify it to complete this function
     raise NotImplementedError
@@ -137,7 +173,7 @@ def solve(grid):
     ----------
     grid(string)
         a string representing a sudoku grid.
-        
+
         Ex. '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
 
     Returns
@@ -152,6 +188,7 @@ def solve(grid):
 
 if __name__ == "__main__":
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    naked_twins(eliminate(grid2values(diag_sudoku_grid)))
     display(grid2values(diag_sudoku_grid))
     result = solve(diag_sudoku_grid)
     display(result)
