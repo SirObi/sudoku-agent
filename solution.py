@@ -45,8 +45,8 @@ def naked_twins(values):
                     for box in unit1:
                         if box == twin1 or box == twin2:
                             continue
-                        values[box] = values[box].replace(values[twin1][0],'')
-                        values[box] = values[box].replace(values[twin1][1],'')
+                        assign_value(values, box, values[box].replace(values[twin1][0],''))
+                        assign_value(values, box, values[box].replace(values[twin1][1],''))
     return values
 
 
@@ -66,7 +66,7 @@ def eliminate(values):
             box_peers = peers[box]
             box_value = values[box]
             for peer in box_peers:
-                values[peer] = values[peer].replace(box_value, "")
+                assign_value(values, peer, values[peer].replace(box_value, ""))
         else:
             continue
     return values
@@ -91,7 +91,7 @@ def only_choice(values):
         for value in '123456789':
             boxes_with_value = [box for box in unit if value in values[box]]
             if len(boxes_with_value) == 1:
-                values[boxes_with_value[0]] = value
+                assign_value(values, boxes_with_value[0], value)
     return values
 
 
