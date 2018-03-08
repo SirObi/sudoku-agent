@@ -14,7 +14,6 @@ unitlist = unitlist + diagonal_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
 
-
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
 
@@ -35,25 +34,22 @@ def naked_twins(values):
                 twins.add(frozenset((box, twin)))
     twins = [tuple(pair) for pair in list(twins)]
 
-    # Iterate through list of units for each twin to see whether they share a unit
-    # If common unit exists, take each box that contains one of the digits from
-    # the twins and save the (box, value) pair to a list.
+    # Identify shared peers for each pair of twins (if twins are in the same unit,
+    # they'll share peers from that unit).
+    # Save each peer, along with the values that need to be removed from it, to a list.
     # Note: we mustn't `replace` values in boxes before the loop ends.
     values_to_replace = []
     for twin1, twin2 in twins:
-        for unit1 in units[twin1]:
-            for unit2 in units[twin2]:
-                if unit1 == unit2:
-                    for box in unit1:
-                        if box == twin1 or box == twin2:
-                            continue
-                        first_value = values[twin1][0]
-                        second_value = values[twin1][1]
-                        if first_value in values[box]:
-                            values_to_replace.append((box, first_value))
-                        if second_value in values[box]:
-                            values_to_replace.append((box, second_value))
+        common_peers = list(peers[twin1].intersection(peers[twin2]))
+        for box in common_peers:
+            first_value = values[twin1][0]
+            second_value = values[twin1][1]
+            if first_value in values[box]:
+                values_to_replace.append((box, first_value))
+            if second_value in values[box]:
+                values_to_replace.append((box, second_value))
 
+    # Now the values_to_replace list contains tuples such as f.x. ('H5', '2')
     # Replacing values happens in this, separate, loop:
     for box, value in values_to_replace:
         assign_value(values, box, values[box].replace(value,''))
