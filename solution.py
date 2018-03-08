@@ -36,8 +36,10 @@ def naked_twins(values):
     twins = [tuple(pair) for pair in list(twins)]
 
     # Iterate through list of units for each twin to see whether they share a unit
-    # If common unit exists, eliminate the two values from each box in the unit
-    # apart from the twins.
+    # If common unit exists, take each box that contains one of the digits from
+    # the twins and save the (box, value) pair to a list.
+    # Note: we mustn't `replace` values in boxes before the loop ends.
+    values_to_replace = []
     for twin1, twin2 in twins:
         for unit1 in units[twin1]:
             for unit2 in units[twin2]:
@@ -45,8 +47,17 @@ def naked_twins(values):
                     for box in unit1:
                         if box == twin1 or box == twin2:
                             continue
-                        assign_value(values, box, values[box].replace(values[twin1][0],''))
-                        assign_value(values, box, values[box].replace(values[twin1][1],''))
+                        first_value = values[twin1][0]
+                        second_value = values[twin1][1]
+                        if first_value in values[box]:
+                            values_to_replace.append((box, first_value))
+                        if second_value in values[box]:
+                            values_to_replace.append((box, second_value))
+
+    # Replacing values happens in this, separate, loop:
+    for box, value in values_to_replace:
+        assign_value(values, box, values[box].replace(value,''))
+
     return values
 
 
