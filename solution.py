@@ -157,9 +157,8 @@ def search(values):
         return values
 
     # Choose one of the unfilled boxes with the fewest possible values (n>1)
-    boxes_lengths = [(box, len(values[box])) for box in values.keys() if len(values[box]) > 1]
-    sorted_by_length = sorted(boxes_lengths, key=lambda box: box[1])
-    chosen_box = min(sorted_by_length)[0]
+    boxes_lengths = [(len(values[box]), box) for box in values.keys() if len(values[box]) > 1]
+    chosen_box = min(boxes_lengths)[1]
 
     # Assign each of the possible values to the box in turn and try to solve resulting grid
     # by constraint propagation and creating further new grids (if necessary)
